@@ -2,18 +2,21 @@ package models
 
 import (
 	"database/sql"
-	"errors"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 type User struct {
-	Id        int       `json:"id"`
-	Username  string    `json:"username"`
-	Email     string    `json:"email"`
-	PassHash  string    `json:"passHash"`
-	CreatedAt time.Time `json:"createdAd"`
+	ID           int64  `db:"id" json:"id"`
+	Email        string `db:"email" json:"email"`
+	PasswordHash string `db:"password_hash" json:"-"`
+
+	FirstName string `db:"first_name" json:"firstName"`
+	LastName  string `db:"last_name" json:"lastName"`
+
+	Role      UserRole  `db:"role" json:"role"`
+	CreatedAt time.Time `db:"created_at" json:"createdAt"`
 }
 
 type UserRepository struct {
@@ -27,15 +30,17 @@ func NewUserRepository(database *sql.DB) *UserRepository {
 }
 
 func (ur *UserRepository) InsertUser(newUser User) error {
-	query := `INSERT INTO users (username, email, passHash, createdAt) 
-				VALUES ($1, $2, $3, $4)`
+	query := `INSERT INTO users 
+    (email, password_hash, first_name, last_name, role, created_at) VALUES (?, ?, ?, ?, ?, ?)`
 
 	_, err := ur.db.Exec(
 		query,
-		newUser.Username,
 		newUser.Email,
-		newUser.PassHash,
-		newUser.CreatedAt.Unix(),
+		newUser.PasswordHash,
+		newUser.FirstName,
+		newUser.LastName,
+		newUser.Role,
+		newUser.CreatedAt,
 	)
 	if err != nil {
 		return err
@@ -44,30 +49,30 @@ func (ur *UserRepository) InsertUser(newUser User) error {
 	return nil
 }
 
-func (ur *UserRepository) GetUserByUsername(username string) (User, error) {
-	query := "SELECT id, username, passHash, email, createdAt from users WHERE username = $1"
+func (ur *UserRepository) GetUserByID(id int64) (User, error) {
+	query := `
+	SELECT id, email, password_hash, first_name, last_name, role, created_at
+	FROM users
+	WHERE id = ?
+	`
 
-	rows, err := ur.db.Query(query, username)
+	row := ur.db.QueryRow(query, id)
+
+	var user User
+
+	err := row.Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.FirstName,
+		&user.LastName,
+		&user.Role,
+		&user.CreatedAt,
+	)
+
 	if err != nil {
 		return User{}, err
 	}
-	if rows.Next() {
-		var user User
-		var ts int64
 
-		err = rows.Scan(
-			&user.Id,
-			&user.Username,
-			&user.PassHash,
-			&user.Email,
-			&ts,
-		)
-		user.CreatedAt = time.Unix(ts, 0)
-		if err != nil {
-			return User{}, err
-		}
-		return user, nil
-	}
-
-	return User{}, errors.New("No such user with this username")
+	return user, nil
 }

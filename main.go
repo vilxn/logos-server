@@ -1,24 +1,33 @@
 package main
 
 import (
-	"database/sql"
-	"dot/auth"
-	"fmt"
+	"dot/models"
+	"log"
+	"time"
 
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
-	db, err := sql.Open("sqlite3", "main.db")
+	db, err := models.InitDB("main.db", "schema.sql")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	defer db.Close()
 
-	var username string = "hello"
-	tokenString, err := auth.CreateToken(username)
-	userClaims, err := auth.ValidateToken(tokenString)
+	userRepository := models.NewUserRepository(db)
 
-	fmt.Println("Username: ", userClaims.Username)
-	fmt.Println("Token: ", tokenString)
+	user := models.User{
+		Email:        "test2@gmail.com",
+		PasswordHash: "test",
+		FirstName:    "test",
+		LastName:     "test",
+		Role:         models.RoleParent,
+		CreatedAt:    time.Now(),
+	}
+
+	err = userRepository.InsertUser(user)
+	if err != nil {
+		panic(err)
+	}
 }
