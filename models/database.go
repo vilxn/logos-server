@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"os"
+	"strings"
 )
 
 func InitDB(database, schemaPath string) (*sql.DB, error) {
@@ -16,7 +17,8 @@ func InitDB(database, schemaPath string) (*sql.DB, error) {
 		return nil, err
 	}
 	_, err = db.Exec(string(schema))
-	if err != nil {
+
+	if err != nil && !strings.Contains(err.Error(), "already exists") {
 		return nil, err
 	}
 

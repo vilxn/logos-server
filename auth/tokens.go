@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"dot/models"
 	"fmt"
 	"time"
 
@@ -10,13 +11,15 @@ import (
 var jwtKey = []byte("mykey")
 
 type UserClaims struct {
-	Username string `json:"username"`
+	ID   int64           `json:"id"`
+	Role models.UserRole `json:"role"`
 	jwt.RegisteredClaims
 }
 
-func CreateToken(username string) (string, error) {
+func CreateToken(user models.User) (string, error) {
 	userClaims := UserClaims{
-		username,
+		user.ID,
+		user.Role,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

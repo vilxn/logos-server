@@ -29,11 +29,11 @@ func NewUserRepository(database *sql.DB) *UserRepository {
 	}
 }
 
-func (ur *UserRepository) InsertUser(newUser User) error {
+func (ur *UserRepository) InsertUser(newUser User) (int64, error) {
 	query := `INSERT INTO users 
     (email, password_hash, first_name, last_name, role, created_at) VALUES (?, ?, ?, ?, ?, ?)`
 
-	_, err := ur.db.Exec(
+	res, err := ur.db.Exec(
 		query,
 		newUser.Email,
 		newUser.PasswordHash,
@@ -43,10 +43,10 @@ func (ur *UserRepository) InsertUser(newUser User) error {
 		newUser.CreatedAt,
 	)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return res.LastInsertId()
 }
 
 func (ur *UserRepository) GetUserByID(id int64) (User, error) {
@@ -75,4 +75,13 @@ func (ur *UserRepository) GetUserByID(id int64) (User, error) {
 	}
 
 	return user, nil
+}
+
+func (ur *UserRepository) DoesEmailExist(email string) (bool, error) {
+	var exists bool
+	err := ur.db.QueryRow("SELECT EXISTS(SELECT 1 FROM users WHERE email = ?)", email).Scan(&exists)
+	if err != nil {
+		panic(err)
+	}
+	return exists, nil
 }

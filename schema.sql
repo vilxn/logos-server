@@ -10,3 +10,4 @@ CREATE TABLE users (
        role TEXT NOT NULL CHECK(role IN ('parent', 'specialist', 'admin')),
        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
