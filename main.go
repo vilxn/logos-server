@@ -1,10 +1,12 @@
 package main
 
 import (
+	"dot/handlers"
 	"dot/models"
+	"dot/service"
 	"log"
-	"time"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -17,17 +19,16 @@ func main() {
 
 	userRepository := models.NewUserRepository(db)
 
-	user := models.User{
-		Email:        "test2@gmail.com",
-		PasswordHash: "test",
-		FirstName:    "test",
-		LastName:     "test",
-		Role:         models.RoleParent,
-		CreatedAt:    time.Now(),
-	}
+	authService := service.NewAuthService(*userRepository)
+	authHandler := handlers.NewAuthHandler(authService)
 
-	err = userRepository.InsertUser(user)
-	if err != nil {
-		panic(err)
+	r := gin.Default()
+
+	api := r.Group("/logos")
+
+	auth := api.Group("/auth")
+	{
+		auth.POST("/register", authHandler.Register)
+		auth.POST("/login", authHandler.Login)
 	}
 }

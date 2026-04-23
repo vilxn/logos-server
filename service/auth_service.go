@@ -1,6 +1,7 @@
 package service
 
 import (
+	"dot/auth"
 	"dot/models"
 	"errors"
 	"time"
@@ -36,4 +37,18 @@ func (s *AuthService) Register(user models.User) (models.User, error) {
 
 	user.ID = userID
 	return user, nil
+}
+
+func (s *AuthService) Login(reqUser models.User) (string, error) {
+	user, err := s.userRepo.GetUserByEmail(reqUser.Email)
+	if err != nil {
+		return "", err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(reqUser.PasswordHash))
+	if err != nil {
+		return "", err
+	}
+
+	return auth.CreateToken(user)
 }
