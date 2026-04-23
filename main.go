@@ -31,4 +31,6 @@ func main() {
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
 	}
+
+	r.Run(":8080")
 }
