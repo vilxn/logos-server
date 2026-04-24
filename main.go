@@ -2,6 +2,7 @@ package main
 
 import (
 	"dot/handlers"
+	"dot/middleware"
 	"dot/models"
 	"dot/service"
 	"log"
@@ -30,6 +31,11 @@ func main() {
 	{
 		auth.POST("/register", authHandler.Register)
 		auth.POST("/login", authHandler.Login)
+	}
+	user := api.Group("/user")
+	{
+		user.Use(middleware.AuthMiddleware())
+		user.GET("/me", 
 	}
 
 	r.Run(":8080")
