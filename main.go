@@ -22,6 +22,7 @@ func main() {
 
 	authService := service.NewAuthService(*userRepository)
 	authHandler := handlers.NewAuthHandler(authService)
+	userHandler := handlers.NewUserHandler(userRepository)
 
 	r := gin.Default()
 
@@ -35,7 +36,7 @@ func main() {
 	user := api.Group("/user")
 	{
 		user.Use(middleware.AuthMiddleware())
-		user.GET("/me", 
+		user.GET("/me", userHandler.GetMe)
 	}
 
 	r.Run(":8080")
