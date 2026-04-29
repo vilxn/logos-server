@@ -7,20 +7,15 @@ import (
 )
 
 type ParentRepository struct {
-	db        *sql.DB
-	parent_id int64
+	db *sql.DB
 }
 
 func NewParentRepository(db *sql.DB) *ParentRepository {
 	return &ParentRepository{db: db}
 }
 
-func (r *ParentRepository) SetParentID(id int64) {
-	r.parent_id = id
-}
-
 // AddChild creates a new child and links them to the parent in one transaction.
-func (r *ParentRepository) AddChild(child Child) (int64, error) {
+func (r *ParentRepository) AddChild(parentID int64, child Child) (int64, error) {
 	tx, err := r.db.Begin()
 	if err != nil {
 		return 0, err
@@ -43,7 +38,7 @@ func (r *ParentRepository) AddChild(child Child) (int64, error) {
 
 	_, err = tx.Exec(
 		`INSERT INTO child_parents (child_id, parent_id) VALUES (?, ?)`,
-		childID, r.parent_id,
+		childID, parentID,
 	)
 	if err != nil {
 		return 0, err
@@ -52,13 +47,13 @@ func (r *ParentRepository) AddChild(child Child) (int64, error) {
 	return childID, tx.Commit()
 }
 
-func (r *ParentRepository) GetChildFromID(childID int64) (*Child, error) {
+func (r *ParentRepository) GetChildFromID(parentID int64, childID int64) (*Child, error) {
 	row := r.db.QueryRow(
 		`SELECT c.id, c.first_name, c.last_name, c.birth_date, c.notes
          FROM children c
          JOIN child_parents cp ON cp.child_id = c.id
          WHERE c.id = ? AND cp.parent_id = ?`,
-		childID, r.parent_id,
+		childID, parentID,
 	)
 
 	var child Child
@@ -75,10 +70,10 @@ func (r *ParentRepository) GetChildFromID(childID int64) (*Child, error) {
 
 // Can be troubles with performance due to GetChildFromID
 // A single JOIN query would be more efficient
-func (r *ParentRepository) GetChildren() ([]*Child, error) {
+func (r *ParentRepository) GetChildren(parentID int64) ([]*Child, error) {
 	rows, err := r.db.Query(
 		`SELECT child_id FROM child_parents WHERE parent_id = ?`,
-		r.parent_id,
+		parentID,
 	)
 	if err != nil {
 		return nil, err
@@ -92,7 +87,7 @@ func (r *ParentRepository) GetChildren() ([]*Child, error) {
 			return nil, err
 		}
 
-		child, err := r.GetChildFromID(childID)
+		child, err := r.GetChildFromID(parentID, childID)
 		if err != nil {
 			return nil, err
 		}

@@ -7,6 +7,7 @@ GET    /users/me<br>
 
 ### Parent
 GET    /parent/children
+POST   /parent/child
 
 ### Appointments
 POST   /appointments<br>

@@ -24,6 +24,7 @@ func main() {
 	parentRepository := models.NewParentRepository(db)
 
 	authService := service.NewAuthService(*userRepository)
+
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userRepository)
 	parentHandler := handlers.NewParentHandler(parentRepository)
@@ -51,10 +52,11 @@ func main() {
 		user.Use(middleware.AuthMiddleware())
 		user.GET("/me", userHandler.GetMe)
 	}
-	children := api.Group("/parent")
+	parent := api.Group("/parent")
 	{
-		children.Use(middleware.RoleMiddleware(models.RoleParent))
-		children.GET("/children", parentHandler.GetChildren)
+		parent.Use(middleware.RoleMiddleware(models.RoleParent))
+		parent.GET("/children", parentHandler.GetChildren)
+		parent.POST("/child", parentHandler.AddChild)
 	}
 	r.Run(":8080")
 }
