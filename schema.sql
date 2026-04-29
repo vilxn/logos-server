@@ -15,22 +15,25 @@ CREATE TABLE users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE parents(
-    id INTEGER PRIMARY KEY
-)
+CREATE TABLE parents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL UNIQUE,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+);
 
--- =========================
--- CHILDREN (дети)
--- =========================
 CREATE TABLE children (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    parent_id INTEGER NOT NULL,
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     birth_date DATE,
-    notes TEXT,
+    notes TEXT
+);
 
-    FOREIGN KEY(parent_id) REFERENCES users(id) ON DELETE CASCADE
+CREATE TABLE child_parents (
+    child_id INTEGER NOT NULL,
+    parent_id INTEGER NOT NULL,
+    FOREIGN KEY(child_id) REFERENCES children(id) ON DELETE CASCADE,
+    FOREIGN KEY(parent_id) REFERENCES parents(id) ON DELETE CASCADE
 );
 
 -- =========================
@@ -152,7 +155,6 @@ CREATE TABLE logs (
 -- =========================
 -- INDEXES
 -- =========================
-CREATE INDEX idx_children_parent ON children(parent_id);
 CREATE INDEX idx_child_specialists_child ON child_specialists(child_id);
 CREATE INDEX idx_child_specialists_specialist ON child_specialists(specialist_id);
 

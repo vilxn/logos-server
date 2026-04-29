@@ -4,7 +4,7 @@ import (
 	"dot/auth"
 	"dot/models"
 	"dot/service"
-	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,8 +14,8 @@ type RegisterRequest struct {
 	Password string          `json:"password" binding:"required,min=6"`
 	Role     models.UserRole `json:"role" binding:"required"`
 
-	FirstName string `json:"first-name" binding:"required"`
-	LastName  string `json:"last-name" binding:"required"`
+	FirstName string `json:"first_name" binding:"required"`
+	LastName  string `json:"last_name" binding:"required"`
 }
 
 type LoginRequest struct {
@@ -36,7 +36,8 @@ func (h *AuthHandler) Register(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
-		fmt.Print(req)
+		log.Default().Println("Error binding json: %v", err)
+		log.Default().Println(req)
 		return
 	}
 
@@ -49,12 +50,15 @@ func (h *AuthHandler) Register(c *gin.Context) {
 	})
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
+		log.Default().Println(err)
 		return
 	}
 
 	tokenString, err := auth.CreateToken(user)
 	if err != nil {
 		c.JSON(400, gin.H{"error": err.Error()})
+		log.Default().Println(err)
+		return
 	}
 
 	c.JSON(201, gin.H{

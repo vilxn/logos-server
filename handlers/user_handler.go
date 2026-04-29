@@ -17,7 +17,7 @@ func NewUserHandler(ur *models.UserRepository) *UserHandler {
 }
 
 func (uh *UserHandler) GetMe(c *gin.Context) {
-	userIdAny, exist := c.Get("userId")
+	userIdAny, exist := c.Get("userID")
 	if !exist {
 		c.JSON(400, gin.H{
 			"message": "no userID",

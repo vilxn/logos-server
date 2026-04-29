@@ -28,7 +28,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// сохраняем в context
-		c.Set("userId", userClaims.ID)
+		c.Set("userID", userClaims.ID)
 		c.Set("role", userClaims.Role)
 
 		c.Next()

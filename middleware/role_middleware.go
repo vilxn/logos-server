@@ -38,7 +38,7 @@ func RoleMiddleware(roles ...models.UserRole) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userId", userClaims.ID)
+		c.Set("userID", userClaims.ID)
 		c.Set("role", userClaims.Role)
 
 		c.Next()

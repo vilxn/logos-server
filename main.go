@@ -21,15 +21,17 @@ func main() {
 	defer db.Close()
 
 	userRepository := models.NewUserRepository(db)
+	parentRepository := models.NewParentRepository(db)
 
 	authService := service.NewAuthService(*userRepository)
 	authHandler := handlers.NewAuthHandler(authService)
 	userHandler := handlers.NewUserHandler(userRepository)
+	parentHandler := handlers.NewParentHandler(parentRepository)
 
 	r := gin.Default()
 
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowOrigins:     []string{"http://localhost:5173"}, // Get rid of in release
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -49,10 +51,10 @@ func main() {
 		user.Use(middleware.AuthMiddleware())
 		user.GET("/me", userHandler.GetMe)
 	}
-	children := api.Group("/children")
+	children := api.Group("/parent")
 	{
-		children.Use(middleware.RoleMiddleware(models.RoleParent, models.RoleSpecialist))
-		children.GET("")
+		children.Use(middleware.RoleMiddleware(models.RoleParent))
+		children.GET("/children", parentHandler.GetChildren)
 	}
 	r.Run(":8080")
 }

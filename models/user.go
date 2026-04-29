@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"log"
 	"time"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -44,6 +45,16 @@ func (ur *UserRepository) InsertUser(newUser User) (int64, error) {
 	)
 	if err != nil {
 		return 0, err
+	}
+	newUser.ID, _ = res.LastInsertId()
+
+	if newUser.Role == RoleParent {
+		query := `INSERT INTO parents (user_id) VALUES (?)`
+		_, err := ur.db.Exec(query, newUser.ID)
+		if err != nil {
+			return 0, err
+		}
+		log.Default().Println("Parent created")
 	}
 
 	return res.LastInsertId()

@@ -5,9 +5,8 @@ POST   /auth/login
 ### Users
 GET    /users/me<br>
 
-### Children
-POST   /children<br>
-GET    /children
+### Parent
+GET    /parent/children
 
 ### Appointments
 POST   /appointments<br>
